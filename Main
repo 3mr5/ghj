@@ -1,0 +1,63 @@
+import os
+import discord
+from discord.ext import commands
+import asyncio
+
+def generate_oauth_link(client_id):
+    base_url = "https://discord.com/api/oauth2/authorize"
+    redirect_uri = "http://localhost"
+    scope = "bot"
+    permissions = "8"  # Administrator permission for simplicity, adjust as needed.
+    return f"{base_url}?client_id={client_id}&permissions={permissions}&scope={scope}"
+
+def start_bot(token):
+    intents = discord.Intents.default()
+    intents.messages = True
+    bot = commands.Bot(command_prefix='!', intents=intents)
+
+    @bot.event
+    async def on_ready():
+        print(f'Bot is ready. Logged in as {bot.user}')
+
+    @bot.command()
+    async def startScreenShare(ctx):
+        instructions = (
+            "Here's how to start screen sharing on Discord:\n"
+            "1. Join a voice channel\n"
+            "2. Click on the 'Screen' button at the bottom of the Discord window\n"
+            "3. Choose which screen or application you want to share\n"
+            "4. Click 'Go Live' to start sharing"
+        )
+        await ctx.send(instructions)
+        
+        await ctx.send("Screen sharing timer started for 10 minutes!")
+        await asyncio.sleep(600)  # 10 minutes in seconds
+        await ctx.send("Time's up! 10 minutes have passed since starting the screen share.")
+
+    bot.run(token)
+
+def main():
+    client_id = os.environ.get('CLIENT_ID')
+    bot_token = os.environ.get('BOT_TOKEN')
+    if not client_id and not bot_token:
+        print("🚨 Oops! Both CLIENT_ID 🆔 and BOT_TOKEN 🔑 environment variables are missing. 🚨")
+    elif not client_id:
+        print("🚨 Oops! The CLIENT_ID 🆔 environment variable is missing. 🚨")
+    elif not bot_token:
+        print("🚨 Oops! The BOT_TOKEN 🔑 environment variable is missing. 🚨")
+    if not client_id or not bot_token:
+        print("Let's fix that together! 😊 Here's how:\n" +
+              "1. 🌐 Go to the Discord Developer Portal. 🌐\n" +
+              "2. 🆕 Create a new application and navigate to the 'Bot' section. 🤖\n" +
+              "3. ➕ Click 'Add Bot' and confirm by clicking 'Yes, do it!'. ✅\n" +
+              "4. 📋 Under the 'TOKEN' section, click 'Copy' to get your BOT_TOKEN. 🔑\n" +
+              "5. 📋 Navigate to the 'OAuth2' section, under 'CLIENT ID', click 'Copy' to get your CLIENT_ID. 🆔\n" +
+              "6. 🔐 Set these values in the Env Secrets tab. 🔐\n" +
+              "For bot permissions, it's recommended to start with basic permissions and adjust as needed for your app's functionality. Let's make your bot awesome! 🚀")
+        return
+    oauth_link = generate_oauth_link(client_id)
+    print(f"OAuth Link: {oauth_link}")
+    start_bot(bot_token)
+
+if __name__ == "__main__":
+    main()
